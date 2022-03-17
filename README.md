@@ -1,20 +1,24 @@
 # Practicum6727-2022
 
-## Install kind
+## Install local k8s cluster
+
+### [kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
 
   - kind create cluster --config=kind-cluster.yaml
 
+### [minikube](https://minikube.sigs.k8s.io/docs/start/)
+
+  - minikube start --network-plugin=cni --cni=false
+
 ## Install Cilium
 
+### with Helm
+
 ```bash
-helm install cilium cilium/cilium --version 1.11.1 \
-   --namespace kube-system \
-   --set kubeProxyReplacement=partial \
-   --set hostServices.enabled=false \
-   --set externalIPs.enabled=true \
-   --set nodePort.enabled=true \
-   --set hostPort.enabled=true \
-   --set bpf.masquerade=false \
-   --set image.pullPolicy=IfNotPresent \
-   --set ipam.mode=kubernetes
+helm install cilium cilium/cilium --version 1.11.2 \
+   --namespace kube-system
 ```
+### with cilium cli
+
+`cilium install`
+
