@@ -2,6 +2,7 @@
 
 ## Kubernetes cluster requirements
 
+  - Register domain name and add it to the cloud provider's DNS service.
 <...>
 
 ## Install local k8s cluster
@@ -258,6 +259,11 @@ config:
 helm repo add pomerium https://helm.pomerium.io
 helm upgrade --install pomerium pomerium/pomerium -f values.yaml
 ```
+
+### Create DNS A record for Pomerium ingress
+
+Create DNS A record `*.pomerium.<domain_name>` and assign it to Pomerium ingress
+IP address of the Load Balancer.
 
 ### Define test service - NGINX
 
