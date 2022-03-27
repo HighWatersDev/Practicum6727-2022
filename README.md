@@ -427,3 +427,9 @@ spec:
 ```bash
 kubectl apply -f istio-grafana-policy.yaml
 ```
+
+## SPIFFE
+
+In current state, both Cilium and Istio have pending PRs for SPIFFE integration. Until those changes are merged, SPIFFE alone will not benefit the framework.
+- [Cilium PR](https://github.com/cilium/cilium/pull/17335)
+- [Istio PR](https://github.com/istio/istio/pull/37947)
