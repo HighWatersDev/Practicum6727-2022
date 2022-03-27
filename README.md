@@ -260,6 +260,8 @@ helm repo add pomerium https://helm.pomerium.io
 helm upgrade --install pomerium pomerium/pomerium -f values.yaml
 ```
 
+**NOTE** in light of recent Okta breach, additional option to enable per-route device authentication using secure token device [1](https://www.pomerium.com/guides/enroll-device.html), [2](https://www.pomerium.com/docs/topics/ppl.html#device-matcher)
+
 ### Create DNS A record for Pomerium ingress
 
 Create DNS A record `*.pomerium.<domain_name>` and assign it to Pomerium ingress
