@@ -130,6 +130,30 @@ data:
   access-token: "base64 encoded access-token here"
 ```
 
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  namespace: cert-manager
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@zta-k8s.ga
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: pomerium
+    # for digital ocean
+    - dns01:
+        digitalocean:
+          tokenSecretRef:
+            name: digitalocean-dns
+            key: access-token
+```
+
 #### for Azure
 
 - assign AKS cluster kubelet managed identity `DNS Zone Contributor` role in DNS zone
@@ -154,31 +178,6 @@ spec:
           hostedZoneName: kubezta.ga
           environment: AzurePublicCloud
 
-```
-
-
-```yaml
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-prod
-  namespace: cert-manager
-spec:
-  acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
-    email: admin@zta-k8s.ga
-    privateKeySecretRef:
-      name: letsencrypt-prod
-    solvers:
-    - http01:
-        ingress:
-          class: pomerium
-    # for digital ocean
-    - dns01:
-        digitalocean:
-          tokenSecretRef:
-            name: digitalocean-dns
-            key: access-token
 ```
 
 ### Deploy LE Issuer
