@@ -724,8 +724,16 @@ spec:
 
 ```
 
+**NOTE:** Using unique Service Account per service allows for granular access control policies.
+
+# Future work
+
 ## SPIFFE
 
 In current state, both Cilium and Istio have pending PRs for SPIFFE integration. Until those changes are merged, SPIFFE alone will not benefit the framework.
 - [Cilium PR](https://github.com/cilium/cilium/pull/17335)
-- [Istio PR](https://github.com/istio/istio/pull/37947)
+- [Istio PR](https://github.com/istio/istio/pull/37947) # Merged and will be available in Istio 1.14
+
+## High Availability
+
+In order to maintain availability of the critical services such as Pomerium, Istio, Calico, they need to be deployed cross availability zones with multiple replicas. Due to resource constraints, this has not been implemented as the part of the final project demo.
