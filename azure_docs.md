@@ -686,6 +686,44 @@ spec:
 kubectl apply -f application-calico-policies.yaml
 ```
 
+### Apply Calico policies to user-facing applications
+
+- Allow external only access to nginx pod. Other pods shouldn't be able to access it.
+
+```yaml
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkPolicy
+metadata:
+  name: hello
+spec:
+  selector: app.kubernetes.io/name == 'nginx'
+  # Configuring only ingress disables external access from the pod
+  ingress:
+    - action: Allow
+      source:
+        serviceAccounts:
+          names: ["pomerium-proxy"] # Allow Pomerium proxy access only
+```
+
+- Allow external only access to grafana pod. Other pods shouldn't be able to access it.
+
+```yaml
+apiVersion: crd.projectcalico.org/v1
+kind: GlobalNetworkPolicy
+metadata:
+  name: grafana
+spec:
+  selector: app.kubernetes.io/name == 'grafana'
+  ingress:
+    - action: Allow
+      source:
+        serviceAccounts:
+          names: ["pomerium-proxy"] # Allow Pomerium proxy access only
+  egress:
+    - action: Allow
+
+```
+
 ## SPIFFE
 
 In current state, both Cilium and Istio have pending PRs for SPIFFE integration. Until those changes are merged, SPIFFE alone will not benefit the framework.
