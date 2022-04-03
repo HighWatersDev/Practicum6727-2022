@@ -2,7 +2,6 @@
 
 ## Kubernetes cluster requirements
 
-  - Register domain name and add it to the cloud provider's DNS service.
 <...>
 
 ## Install local k8s cluster
@@ -15,7 +14,7 @@
 
   - minikube start --network-plugin=cni --cni=false
 
-<!-- ## Install Cilium
+## Install Cilium
 
 ### with Helm
 
@@ -36,13 +35,7 @@ kubectl create namespace istio-system
 helm install istio-base istio/base -n istio-system
 helm install istiod istio/istiod -n istio-system \
   --set sidecarInjectorWebhook.enableNamespacesByDefault=true
-``` -->
-
-## Install Calico
-
-### with Helm
-
-
+```
 
 ## Configure namespace with Istio sidecar injection
 
@@ -67,12 +60,6 @@ helm install \
 
 ```bash
 kubectl label namespace cert-manager istio-injection=enabled
-```
-
-### Create Pomerium namespace
-
-```bash
-kubectl create ns pomerium
 ```
 
 ### Define certificate issuer
@@ -129,33 +116,6 @@ metadata:
 data:
   access-token: "base64 encoded access-token here"
 ```
-
-#### for Azure
-
-- assign AKS cluster kubelet managed identity `DNS Zone Contributor` role in DNS zone
-
-```yaml
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: le-issuer
-  namespace: cert-manager
-spec:
-  acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
-    email: admin@zta-k8s.ga
-    privateKeySecretRef:
-      name: letsencrypt-prod
-    solvers:
-    - dns01:
-        azureDNS:
-          subscriptionID: 5e2a9ee6-0bd8-4749-8a0a-75f1ab7ca131
-          resourceGroupName: practicum
-          hostedZoneName: kubezta.ga
-          environment: AzurePublicCloud
-
-```
-
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -298,13 +258,6 @@ config:
 helm repo add pomerium https://helm.pomerium.io
 helm upgrade --install pomerium pomerium/pomerium -f values.yaml
 ```
-
-**NOTE** in light of recent Okta breach, additional option to enable per-route device authentication using secure token device [1](https://www.pomerium.com/guides/enroll-device.html), [2](https://www.pomerium.com/docs/topics/ppl.html#device-matcher)
-
-### Create DNS A record for Pomerium ingress
-
-Create DNS A record `*.pomerium.<domain_name>` and assign it to Pomerium ingress
-IP address of the Load Balancer.
 
 ### Define test service - NGINX
 
@@ -468,9 +421,3 @@ spec:
 ```bash
 kubectl apply -f istio-grafana-policy.yaml
 ```
-
-## SPIFFE
-
-In current state, both Cilium and Istio have pending PRs for SPIFFE integration. Until those changes are merged, SPIFFE alone will not benefit the framework.
-- [Cilium PR](https://github.com/cilium/cilium/pull/17335)
-- [Istio PR](https://github.com/istio/istio/pull/37947)
