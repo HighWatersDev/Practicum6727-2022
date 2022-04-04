@@ -5,19 +5,6 @@
   - Register domain name and add it to the cloud provider's DNS service.
 <...>
 
-<!-- ## Install Cilium
-
-### with Helm
-
-```bash
-helm repo add cilium https://helm.cilium.io/
-helm install cilium cilium/cilium --version 1.11.2 \
-   --namespace kube-system
-```
-### with cilium cli
-
-`cilium install`
--->
 
 ## Install Istio
 
@@ -737,3 +724,38 @@ In current state, both Cilium and Istio have pending PRs for SPIFFE integration.
 ## High Availability
 
 In order to maintain availability of the critical services such as Pomerium, Istio, Calico, they need to be deployed cross availability zones with multiple replicas. Due to resource constraints, this has not been implemented as the part of the final project demo.
+
+## Audit and Visibility
+
+### Falco
+
+```bash
+helm repo add falcosecurity https://falcosecurity.github.io/charts
+```
+
+```yaml
+auditLog:
+  enabled: true
+falco:
+  jsonOutput: true
+  jsonIncludeOutputProperty: true
+  httpOutput:
+    enabled: true
+  grpc:
+    enabled: true
+  grpcOutput:
+    enabled: true
+falcosidekick:
+  enabled: true
+  fullfqdn: true
+  webui:
+    enabled: true
+```
+
+```bash
+helm upgrade --install falco falcosecurity/falco -f falco.yaml
+```
+
+## Workload Policies
+
+- Open Policy Agent
