@@ -756,6 +756,22 @@ falcosidekick:
 helm upgrade --install falco falcosecurity/falco -f falco.yaml
 ```
 
+### AquaSec
+
+#### Starboard
+
+```bash
+helm repo add aqua https://aquasecurity.github.io/helm-charts
+helm repo update
+helm install starboard-operator aqua/starboard-operator \
+  --namespace starboard-system \
+  --create-namespace \
+  --set="trivy.ignoreUnfixed=true"
+```
+
+View results via Lens Extension
+
+
 ## Workload Policies
 
 - Open Policy Agent
