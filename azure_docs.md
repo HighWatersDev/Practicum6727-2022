@@ -79,6 +79,12 @@ kubectl label namespace cert-manager istio-injection=enabled
 kubectl create ns pomerium
 ```
 
+### Enable Istio sidecat injection
+
+```bash
+kubectl label namespace pomerium istio-injection=enabled 
+```
+
 ### Define certificate issuer
 
 ```yaml
@@ -210,9 +216,8 @@ kubectl apply -f pomerium-certs.yaml
 ### Define custom values.yaml file for Pomerium Helm chart
 
 ```yaml
-### Ensure image tag => v0.17.0. If not, set it manually
-#image:
-#  tag: v0.17.0
+image:
+  tag: v0.17.1
 authenticate:
   idp:
     provider: auth0
@@ -223,7 +228,6 @@ authenticate:
   ingress:
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-      ingress.pomerium.io/service_proxy_upstream: "true"
     tls:
       secretName: authenticate.pomerium.kubezta.ga-tls
 
@@ -713,6 +717,8 @@ spec:
 
 **NOTE:** Using unique Service Account per service allows for granular access control policies.
 
+
+
 # Future work
 
 ## SPIFFE
@@ -772,6 +778,10 @@ helm install starboard-operator aqua/starboard-operator \
 View results via Lens Extension
 
 
-## Workload Policies
+## Network Policies
 
-- Open Policy Agent
+- Deny all traffic by default between pods and namespaces. Then configure individual allow policies based on application needs.
+
+## Logging
+
+- Collect all the logs and aggregate in the centralized location.
