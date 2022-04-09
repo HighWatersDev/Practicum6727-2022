@@ -1,0 +1,35 @@
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: pomerium
+    ingress.pomerium.io/pass_identity_headers: "true"
+    ingress.pomerium.io/policy: |
+      - allow:
+          and:
+            - email:
+                is: grafana-admin@kubezta.ga
+  hosts:
+    - "grafana.pomerium.kubezta.ga"
+  tls:
+  - hosts:
+    - grafana.pomerium.kubezta.ga
+    secretName: grafana.pomerium.kubezta.ga-tls
+persistence:
+  type: pvc
+  enabled: true
+  storageClassName: default
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+  finalizers:
+    - kubernetes.io/pvc-protection
+grafana.ini:
+  auth:
+    disable_login_form: true
+  auth.jwt:
+    enabled: true
+    header_name: X-Pomerium-Jwt-Assertion
+    email_claim: email
+    auto_sign_up: true
+    jwk_set_url: https://authenticate.pomerium.kubezta.ga/.well-known/pomerium/jwks.json

@@ -21,8 +21,8 @@ helm install istiod istio/istiod -n istio-system \
 ### with Helm
 
 ```bash
-echo '{ installation: {kubernetesProvider: AKS }}' > values.yaml
-helm install calico projectcalico/tigera-operator --version v3.22.1 -f values.yaml
+echo '{ installation: {kubernetesProvider: AKS }}' > calico-values.yaml
+helm install calico projectcalico/tigera-operator --version v3.22.1 -f calico-values.yaml
 ```
 
 ## Configure namespace with Istio sidecar injection
@@ -82,7 +82,7 @@ kubectl create ns pomerium
 ### Enable Istio sidecat injection
 
 ```bash
-kubectl label namespace pomerium istio-injection=enabled 
+kubectl label namespace pomerium istio-injection=enabled
 ```
 
 ### Define certificate issuer
@@ -150,7 +150,6 @@ spec:
           resourceGroupName: practicum
           hostedZoneName: kubezta.ga
           environment: AzurePublicCloud
-
 ```
 
 ### Deploy LE Issuer
@@ -683,15 +682,18 @@ kubectl apply -f application-calico-policies.yaml
 
 ```yaml
 apiVersion: crd.projectcalico.org/v1
-kind: GlobalNetworkPolicy
+kind: NetworkPolicy
 metadata:
   name: hello
+  namespace: default
 spec:
   selector: app.kubernetes.io/name == 'nginx'
-  # Configuring only ingress disables external access from the pod
   ingress:
     - action: Allow
+      http:
+        methods: ["GET"]
       source:
+        namespaceSelector: projectcalico.org/name == 'pomerium'
         serviceAccounts:
           names: ["pomerium-proxy"] # Allow Pomerium proxy access only
 ```
@@ -700,14 +702,16 @@ spec:
 
 ```yaml
 apiVersion: crd.projectcalico.org/v1
-kind: GlobalNetworkPolicy
+kind: NetworkPolicy
 metadata:
   name: grafana
+  namespace: default
 spec:
   selector: app.kubernetes.io/name == 'grafana'
   ingress:
     - action: Allow
       source:
+        namespaceSelector: projectcalico.org/name == 'pomerium'
         serviceAccounts:
           names: ["pomerium-proxy"] # Allow Pomerium proxy access only
   egress:
@@ -717,14 +721,71 @@ spec:
 
 **NOTE:** Using unique Service Account per service allows for granular access control policies.
 
+### Apply Calico deny-all policy to default namespace
 
+```yaml
+apiVersion: crd.projectcalico.org/v1
+kind: NetworkPolicy
+metadata:
+  name: default-denyapiVersion: crd.projectcalico.org/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: default
+spec:
+  selector: projectcalico.org/namespace == "default"
+  types:
+  - Ingress
+  - Egress
+
+  namespace: default
+spec:
+  selector: projectcalico.org/namespace == "default"
+  types:
+  - Ingress
+  - Egress
+```
+
+```bash
+kubectl apply -f calico-deny-all.yaml
+```
+
+**NOTE:** Deny all policy may cause service disruption if not prepared correclty. Hence, it is only applied to default namespace where the applications are deployed. This assists in the transition to the zero trust model.
+
+## Tests
+
+### Test network authorization policies
+
+- From `customer` pod to `database` pod
+
+  ```bash
+  curl -I http://database:2379/v2/keys?recursive=true
+  ```
+
+  Result: access is denied because `database` pod can only be accessed from `summary` pod as defined in Calico policy.
+
+- From `customer` pod to `nginx` pod
+
+  ```bash
+  curl -I http://nginx
+  ```
+
+  Result: access is denied because `nginx` pod can only be accessed from Pomerium proxy.
+
+### Test Pomerium policies
+
+- Access `https://grafana.pomerium.kubezta.ga` using other than `grafana-admin@kubezta.ga` email.
+
+  Result: access is denied because the service can only be accessed using `grafana-admin@kubezta.ga` account.
+
+- Access `https://hello.pomerium.kubezta.ga` using `rkirimov3@gatech.edu` email.
+  Result: access is denied becuase the service can only be accessed with accounts belonging to `kubezta.ga` domain.
 
 # Future work
 
 ## SPIFFE
 
 In current state, both Cilium and Istio have pending PRs for SPIFFE integration. Until those changes are merged, SPIFFE alone will not benefit the framework.
-- [Cilium PR](https://github.com/cilium/cilium/pull/17335)
 - [Istio PR](https://github.com/istio/istio/pull/37947) # Merged and will be available in Istio 1.14
 
 ## High Availability

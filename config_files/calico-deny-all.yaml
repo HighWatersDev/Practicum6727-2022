@@ -1,0 +1,10 @@
+apiVersion: crd.projectcalico.org/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: default
+spec:
+  selector: projectcalico.org/namespace == "default"
+  types:
+  - Ingress
+  - Egress

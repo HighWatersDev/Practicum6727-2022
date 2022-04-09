@@ -1,0 +1,43 @@
+image:
+  tag: v0.17.1
+authenticate:
+  idp:
+    provider: auth0
+    url: https://dev-gp51dybl.us.auth0.com
+    clientID: gDEdnEknWN3pzBNSAhynmFAzOF0LDpb6
+    clientSecret: FIUhWWFWlzPooV_8sUVPzk7rGp9AeO4C0_y6ngxDCEaVgAYoWQ3Fww6wTh3W82pY
+    serviceAccount: ewoiY2xpZW50X2lkIjogIjhxNjk5YWdYYVNBM2RabGpJZzR5WjBTeFJNeGZ3SmdnIiwKInNlY3JldCI6ICJ5STBIbUd5dV9Fclk0TGlzbU9LM1BkSm44cGdNMlVvR1dyX0o5M1Y2TFNKVUd6Wm1MNG04UG45aDl4MFdMdFBSIgp9Cg==
+  ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    tls:
+      secretName: authenticate.pomerium.kubezta.ga-tls
+
+proxy:
+  cookie_secret: W5jwcMdMRs7JMuZ1uCy/rnf9NzHsbqnKSJlMKSOEyFQ=
+  deployment:
+    podAnnotations:
+      traffic.sidecar.istio.io/excludeInboundPorts: "80,443"
+
+redis:
+  enabled: true
+  tls:
+    enabled: false
+
+ingress:
+  enabled: false
+
+ingressController:
+  enabled: true
+
+service:
+  authorize:
+    headless: false
+  databroker:
+    headless: false
+
+config:
+  sharedSecret: M4pXv+vIBzTHAREK1CBMk8SoYLTWEQ9sicIZ+KY1U0s=
+  rootDomain: pomerium.kubezta.ga
+  generateTLS: false
+  insecure: true
