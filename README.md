@@ -93,7 +93,7 @@ Create DNS A record `*.pomerium.<domain_name>` and assign it to Pomerium ingress
 
 ```bash
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm upgrade --install nginx bitnami/nginx --set service.type=ClusterIP
+helm upgrade --install nginx bitnami/nginx --set service.type=ClusterIP --set podAnnotations='inject.istio.io/templates: "sidecar\,spire"'
 ```
 
 ```bash
@@ -103,16 +103,6 @@ kubectl apply -f hello.yaml
 ### Testing
 
 - attempt to log in using valid user from a different domain
-
-### Deploy test service - nginx-secret
-
-In light of recent Okta breach, additional option to enable per-route device authentication using secure token device [1](https://www.pomerium.com/guides/enroll-device.html), [2](https://www.pomerium.com/docs/topics/ppl.html#device-matcher)
-
-Currently, there is a bug in the device identity authorization.
-
-```bash
-kubectl apply -f hello-secret.yaml
-```
 
 ### Deploy test service - Grafana
 
@@ -134,7 +124,7 @@ kubectl apply -f yaobank.yaml
 ### Apply Istio deny-all policy to default, dev namespaces
 
 ```bash
-kubectl apply -f istio-deny-all.yaml
+kubectl apply -f istio-policies.yaml
 ```
 
 **NOTE:** Using unique Service Account per service allows for granular access control policies.
@@ -170,6 +160,12 @@ kubectl apply -f istio-deny-all.yaml
 - Access `https://hello.pomerium.kubezta.ga` using `rkirimov3@gatech.edu` email.
   Result: access is denied becuase the service can only be accessed with accounts belonging to `kubezta.ga` domain.
 
+### Deploy test application - bookinfo
+
+```bash
+kubectl apply -f bookinfo -n dev
+```
+
 ### Test SPIFFE workload identity
 
 ```bash
@@ -178,6 +174,22 @@ istioctl pc secret productpage-v1-68c7c59cb5-jkvz8 -n dev -o json | jq -r \
 
 openssl x509 -in chain.pem -text
 ```
+
+### Test webpage access
+
+- https://customer.yaobank.pomerium.kubezta.ga/
+  - access from kubezta.ga domain - allowed
+  - access from gatech.edu domain - denied
+
+- https://productpage.pomerium.kubezta.ga/
+  - access from rkirimov3@kubezta.ga - allowed
+  - access from nginx@kubezta.ga - denied
+
+- https://grafana.pomerium.kubezta.ga/
+  - access from grafana-admin@kubezta.ga - allowed
+
+- https://hello.pomerium.kubezta.ga/
+  - access from nginx@kubezta.ga - allowed
 
 ## Container runtime security
 
@@ -209,3 +221,17 @@ In order to maintain availability of the critical services such as Pomerium, Ist
 ## User Interface
 
 - To abstract the configuration complexity, create web user interface to interact with the deployments. This will allow for easier click-through experience while abstracting manual definition of YAML configuration files.
+
+## Hardware security token
+
+In light of recent Okta breach, there is an option to use hardware security token as an additional authentication factor. The deployment has a bug that did not get resolved in time and remains as future work.
+
+### Deploy test service - nginx-secret
+
+In light of recent Okta breach, additional option to enable per-route device authentication using secure token device [1](https://www.pomerium.com/guides/enroll-device.html), [2](https://www.pomerium.com/docs/topics/ppl.html#device-matcher)
+
+Currently, there is a bug in the device identity authorization.
+
+```bash
+kubectl apply -f hello-secret.yaml
+```

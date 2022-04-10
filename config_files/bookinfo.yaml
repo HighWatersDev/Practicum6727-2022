@@ -272,7 +272,7 @@ metadata:
   namespace: dev
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    ingress.pomerium.io/policy: '[{"allow":{"and":[{"domain":{"is":"kubezta.ga"}}]}}]'
+    ingress.pomerium.io/policy: '[{"allow":{"and":[{"email":{"is":"rkirimov3@kubezta.ga"}}]}}]'
     ingress.pomerium.io/pass_identity_headers: "true"
 spec:
   ingressClassName: pomerium

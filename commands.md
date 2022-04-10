@@ -1,36 +1,20 @@
 # Commands
 
 ```bash
-kubectl create namespace istio-system
-kubectl create namespace cert-manager
-kubectl create namespace pomerium
-kubectl create namespace falco
-kubectl create namespace dev
+kubectl apply -f spire.yaml
+istioctl install -f spire-istio.yaml
+
 kubectl label namespace default istio-injection=enabled
-kubectl label namespace dev istio-injection=enabled
-kubectl label namespace cert-manager istio-injection=enabled
-kubectl label namespace pomerium istio-injection=enabled
-kubectl label namespace falco istio-injection=enabled
-
-helm install istio-base istio/base -n istio-system
-helm install istiod istio/istiod -n istio-system \
-  --set sidecarInjectorWebhook.enableNamespacesByDefault=true
-
-echo '{ installation: {kubernetesProvider: AKS }}' > calico-values.yaml
-helm install calico projectcalico/tigera-operator --version v3.22.1 -f calico-values.yaml
-
-calicoctl patch FelixConfiguration default --patch \
-   '{"spec": {"policySyncPathPrefix": "/var/run/nodeagent"}}'
-
-curl https://docs.projectcalico.org/archive/v3.21/manifests/alp/istio-inject-configmap-1.10.yaml -o istio-inject-configmap.yaml
-kubectl patch configmap -n istio-system istio-sidecar-injector --patch "$(cat istio-inject-configmap.yaml)"
-
-kubectl apply -f https://docs.projectcalico.org/archive/v3.21/manifests/alp/istio-app-layer-policy-envoy-v3.yaml
 
 helm install \
   cert-manager jetstack/cert-manager \
   --namespace cert-manager \
+  --create-namespace \
   --set installCRDs=true
+kubectl label namespace cert-manager istio-injection=enabled
+
+kubectl create ns pomerium
+kubectl label namespace pomerium istio-injection=enabled
 
 kubectl apply -f pomerium-certs.yaml
 helm upgrade --install pomerium pomerium/pomerium -f pomerium-values.yaml -n pomerium
@@ -42,4 +26,29 @@ helm upgrade --install grafana grafana/grafana --values grafana-values.yaml
 kubectl apply -f grafana.yaml
 
 kubectl apply -f yaobank.yaml
+
+kubectl apply -f istio-policies.yaml
+
+kubectl create ns dev
+kubectl label namespace dev istio-injection=enabled
+kubectl apply -f bookinfo -n dev
+
+kubectl create ns falco
+kubectl label namespace falco istio-injection=enabled
+helm upgrade --install falco falcosecurity/falco -f falco.yaml -n falco
+
+kubectl exec -it $POD -c $CONTAINER -- bash
+curl -I http://database:2379/v2/keys?recursive=true # customer
+
+curl -I http://nginx # hello
+
+curl -I http://productpage.dev:9080 # productpage in dev ns
+
+istioctl pc secret $POD -n dev -o json | jq -r \
+'.dynamicActiveSecrets[0].secret.tlsCertificate.certificateChain.inlineBytes' | base64 --decode > chain.pem
+openssl x509 -in chain.pem -text
+
+#####################
+helm upgrade --install nginx-secret bitnami/nginx --set service.type=ClusterIP --set podAnnotations='inject.istio.io/templates: "sidecar\,spire"'
+kubectl apply -f hello-secret.yaml
 ```

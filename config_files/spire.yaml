@@ -175,9 +175,9 @@ metadata:
   namespace: spire
 data:
   k8s-workload-registrar.conf: |
-    trust_domain = "example.org"
+    trust_domain = "kubezta.ga"
     server_socket_path = "/run/spire/sockets/server.sock"
-    cluster = "demo-cluster"
+    cluster = "practicum-test"
     mode = "crd"
     metrics_bind_addr = "0"
 ---
@@ -233,7 +233,7 @@ data:
       bind_address = "0.0.0.0"
       bind_port = "8081"
       socket_path = "/run/spire/sockets/server.sock"
-      trust_domain = "example.org"
+      trust_domain = "kubezta.ga"
       data_dir = "/run/spire/data"
       log_level = "DEBUG"
       ca_key_type = "rsa-2048"
@@ -255,7 +255,7 @@ data:
         plugin_data {
           clusters = {
             # NOTE: Change this to your cluster name
-            "demo-cluster" = {
+            "practicum-test" = {
               use_token_review_api_validation = true
               service_account_allow_list = ["spire:spire-agent"]
             }
@@ -434,13 +434,13 @@ data:
       server_port = "8081"
       socket_path = "/run/secrets/workload-spiffe-uds/socket"
       trust_bundle_path = "/run/spire/bundle/root-cert.pem"
-      trust_domain = "example.org"
+      trust_domain = "kubezta.ga"
     }
     plugins {
       NodeAttestor "k8s_psat" {
         plugin_data {
           # NOTE: Change this to your cluster name
-          cluster = "demo-cluster"
+          cluster = "practicum-test"
         }
       }
       KeyManager "memory" {
