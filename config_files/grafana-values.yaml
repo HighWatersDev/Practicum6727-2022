@@ -1,3 +1,5 @@
+podAnnotations:
+  inject.istio.io/templates: "sidecar,spire"
 ingress:
   enabled: true
   annotations:

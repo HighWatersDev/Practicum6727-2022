@@ -33,7 +33,7 @@ helm install \
 kubectl apply -f pomerium-certs.yaml
 helm upgrade --install pomerium pomerium/pomerium -f pomerium-values.yaml -n pomerium
 
-helm upgrade --install nginx bitnami/nginx --set service.type=ClusterIP
+helm upgrade --install nginx bitnami/nginx --set service.type=ClusterIP --set podAnnotations='inject.istio.io/templates: "sidecar\,spire"'
 kubectl apply -f hello.yaml
 
 helm upgrade --install grafana grafana/grafana --values grafana-values.yaml

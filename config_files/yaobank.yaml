@@ -32,6 +32,8 @@ spec:
       labels:
         app: database
         version: v1
+      annotations:
+        inject.istio.io/templates: "sidecar,spire"
     spec:
       serviceAccountName: database
       containers:
@@ -83,6 +85,8 @@ spec:
       labels:
         app: summary
         version: v1
+      annotations:
+        inject.istio.io/templates: "sidecar,spire"
     spec:
       serviceAccountName: summary
       containers:
@@ -128,6 +132,8 @@ spec:
       labels:
         app: customer
         version: v1
+      annotations:
+        inject.istio.io/templates: "sidecar,spire"
     spec:
       serviceAccountName: customer
       containers:
