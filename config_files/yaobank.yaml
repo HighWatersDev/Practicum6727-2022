@@ -169,44 +169,56 @@ spec:
     - customer.yaobank.pomerium.kubezta.ga
     secretName: customer.yaobank.pomerium.kubezta.ga-tls
 ---
-apiVersion: crd.projectcalico.org/v1
-kind: GlobalNetworkPolicy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
 metadata:
   name: customer
+  namespace: default
 spec:
-  selector: app == 'customer'
-  ingress:
-    - action: Allow
-      http:
+  selector:
+    matchLabels:
+      app: customer
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/pomerium/sa/pomerium-proxy"]
+    - source:
+        namespaces: ["pomerium"]
+  - to:
+    - operation:
         methods: ["GET"]
-  egress:
-    - action: Allow
 ---
-apiVersion: crd.projectcalico.org/v1
-kind: GlobalNetworkPolicy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
 metadata:
   name: summary
+  namespace: default
 spec:
-  selector: app == 'summary'
-  ingress:
-    - action: Allow
-      source:
-        serviceAccounts:
-          names: ["customer"]
-  egress:
-    - action: Allow
+  selector:
+    matchLabels:
+      app: summary
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/default/sa/customer"]
+    - source:
+        namespaces: ["default"]
 ---
-apiVersion: crd.projectcalico.org/v1
-kind: GlobalNetworkPolicy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
 metadata:
   name: database
 spec:
-  selector: app == 'database'
-  ingress:
-    - action: Allow
-      source:
-        serviceAccounts:
-          names: ["summary"]
-  egress:
-    - action: Allow
+  selector:
+    matchLabels:
+      app: database
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/default/sa/summary"]
+    - source:
+        namespaces: ["default"]
 ---

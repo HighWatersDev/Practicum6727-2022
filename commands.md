@@ -5,7 +5,9 @@ kubectl create namespace istio-system
 kubectl create namespace cert-manager
 kubectl create namespace pomerium
 kubectl create namespace falco
+kubectl create namespace dev
 kubectl label namespace default istio-injection=enabled
+kubectl label namespace dev istio-injection=enabled
 kubectl label namespace cert-manager istio-injection=enabled
 kubectl label namespace pomerium istio-injection=enabled
 kubectl label namespace falco istio-injection=enabled
