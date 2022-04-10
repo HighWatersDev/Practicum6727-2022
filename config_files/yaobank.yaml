@@ -210,6 +210,7 @@ apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: database
+  namespace: default
 spec:
   selector:
     matchLabels:

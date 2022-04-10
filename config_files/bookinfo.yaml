@@ -204,94 +204,6 @@ spec:
       - name: tmp
         emptyDir: {}
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: reviews-v2
-  labels:
-    app: reviews
-    version: v2
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: reviews
-      version: v2
-  template:
-    metadata:
-      labels:
-        app: reviews
-        version: v2
-      annotations:
-        inject.istio.io/templates: "sidecar,spire"
-    spec:
-      serviceAccountName: bookinfo-reviews
-      containers:
-      - name: reviews
-        image: docker.io/istio/examples-bookinfo-reviews-v2:1.16.2
-        imagePullPolicy: IfNotPresent
-        env:
-        - name: LOG_DIR
-          value: "/tmp/logs"
-        ports:
-        - containerPort: 9080
-        volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-        - name: wlp-output
-          mountPath: /opt/ibm/wlp/output
-        securityContext:
-          runAsUser: 1000
-      volumes:
-      - name: wlp-output
-        emptyDir: {}
-      - name: tmp
-        emptyDir: {}
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: reviews-v3
-  labels:
-    app: reviews
-    version: v3
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: reviews
-      version: v3
-  template:
-    metadata:
-      labels:
-        app: reviews
-        version: v3
-      annotations:
-        inject.istio.io/templates: "sidecar,spire"
-    spec:
-      serviceAccountName: bookinfo-reviews
-      containers:
-      - name: reviews
-        image: docker.io/istio/examples-bookinfo-reviews-v3:1.16.2
-        imagePullPolicy: IfNotPresent
-        env:
-        - name: LOG_DIR
-          value: "/tmp/logs"
-        ports:
-        - containerPort: 9080
-        volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-        - name: wlp-output
-          mountPath: /opt/ibm/wlp/output
-        securityContext:
-          runAsUser: 1000
-      volumes:
-      - name: wlp-output
-        emptyDir: {}
-      - name: tmp
-        emptyDir: {}
----
 ##################################################################################################
 # Productpage services
 ##################################################################################################
@@ -353,3 +265,100 @@ spec:
       - name: tmp
         emptyDir: {}
 ---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: productpage
+  namespace: dev
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    ingress.pomerium.io/policy: '[{"allow":{"and":[{"domain":{"is":"kubezta.ga"}}]}}]'
+    ingress.pomerium.io/pass_identity_headers: "true"
+spec:
+  ingressClassName: pomerium
+  rules:
+  - host: productpage.pomerium.kubezta.ga
+    http:
+      paths:
+      - backend:
+          service:
+            name: productpage
+            port:
+              name: http
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - productpage.pomerium.kubezta.ga
+    secretName: productpage.pomerium.kubezta.ga-tls
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: productpage
+  namespace: dev
+spec:
+  selector:
+    matchLabels:
+      app: productpage
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/pomerium/sa/pomerium-proxy"]
+    - source:
+        namespaces: ["pomerium"]
+  - to:
+    - operation:
+        methods: ["GET"]
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: details
+  namespace: dev
+spec:
+  selector:
+    matchLabels:
+      app: details
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/dev/sa/bookinfo-productpage"]
+  - to:
+    - operation:
+        methods: ["GET"]
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: reviews
+  namespace: dev
+spec:
+  selector:
+    matchLabels:
+      app: reviews
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/dev/sa/bookinfo-productpage"]
+  - to:
+    - operation:
+        methods: ["GET"]
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: ratings
+  namespace: dev
+spec:
+  selector:
+    matchLabels:
+      app: ratings
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/dev/sa/bookinfo-reviews"]

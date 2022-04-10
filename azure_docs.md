@@ -785,7 +785,7 @@ kubectl apply -f calico-deny-all.yaml
 
 ## SPIFFE
 
-In current state, both Cilium and Istio have pending PRs for SPIFFE integration. Until those changes are merged, SPIFFE alone will not benefit the framework.
+SPIFFE and its implementation SPIRE allows for workload attestation through short-lived x509 certificates issued by SPIRE server. These certificates are used by Istio to establish mTLS connections. This provides additional assurance of the identity.
 - [Istio PR](https://github.com/istio/istio/pull/37947) # Merged and will be available in Istio 1.14
 
 ## High Availability
