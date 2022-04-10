@@ -31,29 +31,6 @@ helm install calico projectcalico/tigera-operator --version v3.22.1 -f calico-va
 kubectl label namespace default istio-injection=enabled
 ```
 
-## Configure Calico Istio integration
-
-- Enable application layer policy
-
-```bash
-calicoctl patch FelixConfiguration default --patch \
-   '{"spec": {"policySyncPathPrefix": "/var/run/nodeagent"}}'
-```
-
-- Update Istio sidecar injector
-
-```bash
-curl https://docs.projectcalico.org/archive/v3.21/manifests/alp/istio-inject-configmap-1.10.yaml -o istio-inject-configmap.yaml
-kubectl patch configmap -n istio-system istio-sidecar-injector --patch "$(cat istio-inject-configmap.yaml)"
-```
-
-- Add Calico authorization services to the mesh
-
-```bash
-kubectl apply -f https://docs.projectcalico.org/archive/v3.21/manifests/alp/istio-app-layer-policy-envoy-v3.yaml
-```
-
-
 ## Install Cert-Manager
 
 ### Deploy cert-manager with CRDs
@@ -781,12 +758,20 @@ kubectl apply -f calico-deny-all.yaml
 - Access `https://hello.pomerium.kubezta.ga` using `rkirimov3@gatech.edu` email.
   Result: access is denied becuase the service can only be accessed with accounts belonging to `kubezta.ga` domain.
 
-# Future work
-
 ## SPIFFE
 
 SPIFFE and its implementation SPIRE allows for workload attestation through short-lived x509 certificates issued by SPIRE server. These certificates are used by Istio to establish mTLS connections. This provides additional assurance of the identity.
 - [Istio PR](https://github.com/istio/istio/pull/37947) # Merged and will be available in Istio 1.14
+
+### Test workload identity
+
+```bash
+istioctl pc secret productpage-v1-68c7c59cb5-jkvz8 -n dev -o json | jq -r \
+'.dynamicActiveSecrets[0].secret.tlsCertificate.certificateChain.inlineBytes' | base64 --decode > chain.pem
+openssl x509 -in chain.pem -text
+```
+
+# Future work
 
 ## High Availability
 
@@ -820,7 +805,7 @@ falcosidekick:
 ```
 
 ```bash
-helm upgrade --install falco falcosecurity/falco -f falco.yaml
+helm upgrade --install falco falcosecurity/falco -f falco.yaml -n falco
 ```
 
 ### AquaSec
@@ -837,11 +822,6 @@ helm install starboard-operator aqua/starboard-operator \
 ```
 
 View results via Lens Extension
-
-
-## Network Policies
-
-- Deny all traffic by default between pods and namespaces. Then configure individual allow policies based on application needs.
 
 ## Logging
 

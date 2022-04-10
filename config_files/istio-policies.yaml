@@ -14,3 +14,13 @@ metadata:
 spec:
   {}
 ---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+ name: allow-all-falco
+ namespace: istio-system
+spec:
+  rules:
+  - from:
+    - source:
+        namespaces: ["falco"]
