@@ -216,3 +216,7 @@ View results via Lens Extension
 ## Logging
 
 - Collect all the logs and aggregate in the centralized location.
+
+## User Interface
+
+- To abstract the configuration complexity, create web user interface to interact with the deployments. This will allow for easier click-through experience while abstracting manual definition of YAML configuration files.
