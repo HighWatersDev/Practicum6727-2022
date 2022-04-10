@@ -1,6 +1,9 @@
 image:
   tag: v0.17.1
 authenticate:
+  deployment:
+    podAnnotations:
+      inject.istio.io/templates: sidecar,spire
   idp:
     provider: auth0
     url: https://dev-gp51dybl.us.auth0.com
@@ -12,23 +15,40 @@ authenticate:
       cert-manager.io/cluster-issuer: letsencrypt-prod
     tls:
       secretName: authenticate.pomerium.kubezta.ga-tls
+authorize:
+  deployment:
+    podAnnotations:
+      inject.istio.io/templates: sidecar,spire
 
 proxy:
   cookie_secret: W5jwcMdMRs7JMuZ1uCy/rnf9NzHsbqnKSJlMKSOEyFQ=
   deployment:
     podAnnotations:
+      inject.istio.io/templates: sidecar,spire
       traffic.sidecar.istio.io/excludeInboundPorts: "80,443"
 
 redis:
   enabled: true
   tls:
     enabled: false
-
+  master:
+    podAnnotations:
+      inject.istio.io/templates: sidecar,spire
+  replica:
+    podAnnotations:
+      inject.istio.io/templates: sidecar,spire
+databroker:
+  deployment:
+    podAnnotations:
+      inject.istio.io/templates: sidecar,spire
 ingress:
   enabled: false
 
 ingressController:
   enabled: true
+  deployment:
+    podAnnotations:
+      inject.istio.io/templates: sidecar,spire
 
 service:
   authorize:
