@@ -175,6 +175,7 @@ kubectl apply -f istio-deny-all.yaml
 ```bash
 istioctl pc secret productpage-v1-68c7c59cb5-jkvz8 -n dev -o json | jq -r \
 '.dynamicActiveSecrets[0].secret.tlsCertificate.certificateChain.inlineBytes' | base64 --decode > chain.pem
+
 openssl x509 -in chain.pem -text
 ```
 
@@ -194,28 +195,16 @@ helm upgrade --install falco falcosecurity/falco -f falco.yaml -n falco
 
 ## High Availability
 
-In order to maintain availability of the critical services such as Pomerium, Istio, Calico, they need to be deployed cross availability zones with multiple replicas. Due to resource constraints, this has not been implemented as the part of the final project demo.
+In order to maintain availability of the critical services such as Pomerium, Istio, Calico, they need to be deployed across availability zones with multiple replicas. Due to resource constraints, this has not been implemented as the part of the final project demo.
 
-## Audit and Visibility
+## Visibility
 
-### AquaSec
+- Collect metrics from cluster components to analyze any performance-related issues.
 
-#### Starboard
-
-```bash
-helm repo add aqua https://aquasecurity.github.io/helm-charts
-helm repo update
-helm install starboard-operator aqua/starboard-operator \
-  --namespace starboard-system \
-  --create-namespace \
-  --set="trivy.ignoreUnfixed=true"
-```
-
-View results via Lens Extension
-
-## Logging
+## Audit and Logging
 
 - Collect all the logs and aggregate in the centralized location.
+- Collect all audit events to monitor any unauthorized access.
 
 ## User Interface
 
