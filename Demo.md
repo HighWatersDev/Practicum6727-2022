@@ -50,7 +50,7 @@ Pomerium provides proxy service accepting all inbound traffic from the Internet 
   openssl x509 -in chain.pem -text
 
 Test webpages
-- https://customer.yaobank.pomerium.kubezta.ga/
+-  /
   - access from kubezta.ga domain - allowed
   - access from gatech.edu domain - denied
 
